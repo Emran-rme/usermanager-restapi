@@ -4,6 +4,8 @@ const app = express();
 
 require("./middleware")(app);
 require("./routes")(app);
+require("./middleware/exception")(app);
+require("./middleware/404")(app);
 
 module.exports = (port) => {
     app.listen(port, () => {
