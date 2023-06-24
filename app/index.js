@@ -2,6 +2,7 @@ const express = require("express");
 
 const app = express();
 
+require("./bootstrap");
 require("./middleware")(app);
 require("./routes")(app);
 require("./middleware/exception")(app);
