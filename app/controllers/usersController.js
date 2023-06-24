@@ -1,8 +1,8 @@
 const userModel = require("../models/User");
 
 class User {
-    index(req, res, next) {
-        res.json({
+    async index(req, res, next) {
+        res.status(200).json({
             success: "true",
             message: "لیست کاربران با موفقیت ایجاد شد",
         });
@@ -10,11 +10,21 @@ class User {
 
     async store(req, res, next) {
         try {
+            const { first_name, last_name, mobile, email } = req.body;
+
+            //validation
+            if (first_name.trim() === "" || last_name.trim() === "") {
+                res.status(422).json({
+                    error: true,
+                    message: "اطلاعات ارسالی برای ایجاد کاربر معتبر نمی باشد",
+                });
+            }
+
             const newUser = new userModel({
-                first_name: req.body.first_name,
-                last_name: req.body.last_name,
-                mobile: req.body.mobile,
-                email: req.body.email,
+                first_name,
+                last_name,
+                mobile,
+                email,
             });
 
             await newUser.save();
@@ -22,7 +32,7 @@ class User {
             res.status(201).json({
                 success: true,
                 message: "کاربر جدید با موفقیت ایجاد شد",
-                newUserID: newUser._id,
+                newUser,
             });
         } catch (error) {
             next(error);
