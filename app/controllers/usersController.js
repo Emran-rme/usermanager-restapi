@@ -2,7 +2,7 @@ const userModel = require("../models/User");
 
 class User {
     async index(req, res, next) {
-        let projection = {};
+        let projection = { first_name: 1, last_name: 1 };
 
         if (req.query.hasOwnProperty("fields")) {
             projection = req.query.fields
