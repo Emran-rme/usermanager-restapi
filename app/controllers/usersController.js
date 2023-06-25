@@ -3,6 +3,9 @@ const userModel = require("../models/User");
 class User {
     async index(req, res, next) {
         let projection = { first_name: 1, last_name: 1 };
+        let perPage = parseInt(req.query.limit) || 2;
+        let page = parseInt(req.query.page) || 1;
+        let offset = (page - 1) * perPage;
 
         if (req.query.hasOwnProperty("fields")) {
             projection = req.query.fields
@@ -12,13 +15,65 @@ class User {
                 }, {});
         }
 
-        const users = await userModel.find({}, projection);
+        const userCount = await userModel.count();
+        const users = await userModel
+            .find({}, projection)
+            .limit(perPage)
+            .skip(offset);
+
+        let pages = Math.ceil(userCount / perPage);
 
         res.status(200).json({
             success: "true",
             message: "لیست کاربران با موفقیت ایجاد شد",
             data: {
                 users,
+            },
+            meta: {
+                pages,
+                page,
+                nextPage: User.#hasNextPage(pages, page)
+                    ? `${process.env.APP_URL}:${
+                          process.env.APP_PORT
+                      }/api/v1/users${
+                          req.query.fields
+                              ? req.query.limit
+                                  ? "?fields=" +
+                                    req.query.fields +
+                                    "&page=" +
+                                    (page + 1) +
+                                    "&limit=" +
+                                    perPage
+                                  : "?fields=" +
+                                    req.query.fields +
+                                    "&page=" +
+                                    (page + 1)
+                              : req.query.limit
+                              ? "?page=" + (page + 1) + "&limit=" + perPage
+                              : "?page=" + (page + 1)
+                      }`
+                    : null,
+                prevPage: User.#hasPervPage(page)
+                    ? `${process.env.APP_URL}:${
+                          process.env.APP_PORT
+                      }/api/v1//users${
+                          req.query.fields
+                              ? req.query.limit
+                                  ? "?fields=" +
+                                    req.query.fields +
+                                    "&page=" +
+                                    (page - 1) +
+                                    "&limit=" +
+                                    perPage
+                                  : "?fields=" +
+                                    req.query.fields +
+                                    "&page=" +
+                                    (page - 1)
+                              : req.query.limit
+                              ? "?page=" + (page - 1) + "&limit=" + perPage
+                              : "?page=" + (page - 1)
+                      }`
+                    : null,
             },
         });
     }
@@ -146,6 +201,14 @@ class User {
         } catch (error) {
             next(error);
         }
+    }
+
+    static #hasNextPage(pages, page) {
+        return page < pages;
+    }
+
+    static #hasPervPage(page) {
+        return page > 1;
     }
 }
 
