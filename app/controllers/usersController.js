@@ -2,7 +2,17 @@ const userModel = require("../models/User");
 
 class User {
     async index(req, res, next) {
-        const users = await userModel.find({});
+        let projection = {};
+
+        if (req.query.hasOwnProperty("fields")) {
+            projection = req.query.fields
+                .split(",")
+                .reduce((total, current) => {
+                    return { [current]: 1, ...total };
+                }, {});
+        }
+
+        const users = await userModel.find({}, projection);
 
         res.status(200).json({
             success: "true",
