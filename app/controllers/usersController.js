@@ -58,6 +58,44 @@ class User {
             next(error);
         }
     }
+
+    async show(req, res, next) {
+        try {
+            const { id } = req.params;
+            let projection = {};
+
+            if (req.query.hasOwnProperty("fields")) {
+                projection = req.query.fields
+                    .split(",")
+                    .reduce((total, current) => {
+                        return { [current]: 1, ...total };
+                    }, {});
+            }
+
+            if (!id) {
+                return res.status(404).json({
+                    error: true,
+                    message: "کاربری با  این مشخصات یافت نشد",
+                });
+            }
+
+            const user = await userModel.findOne({ _id: id }, projection);
+
+            if (!user) {
+                return res.status(404).json({
+                    error: true,
+                    message: "کاربری با  این مشخصات یافت نشد",
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                data: { user },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new User();

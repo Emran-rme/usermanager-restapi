@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.get("/", usersController.index);
 router.post("/", usersController.store);
+router.get("/:id", usersController.show);
 
 module.exports = router;
