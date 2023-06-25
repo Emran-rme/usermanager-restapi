@@ -118,6 +118,35 @@ class User {
             next(error);
         }
     }
+
+    async update(req, res, next) {
+        try {
+            const { id } = req.params;
+            if (!id) {
+                return res.status(404).json({
+                    error: true,
+                    message: "کاربری با  این مشخصات یافت نشد",
+                });
+            }
+
+            const { n, nModified } = await userModel.updateOne(
+                { _id: id },
+                { ...req.body }
+            );
+
+            if (n === 0 || nModified === 0) {
+                throw new Error("عملیات به روزرسانی با خطا مواجه گردید");
+                return;
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "اطلاعات کاربر با موفقیت ویرایش شد",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 module.exports = new User();
